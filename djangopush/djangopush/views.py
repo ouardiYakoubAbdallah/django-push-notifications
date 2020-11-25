@@ -1,8 +1,9 @@
 from django.http.response import HttpResponse, JsonResponse
 from django.views.decorators.http import require_GET, require_POST
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 from webpush import send_user_notification
 
@@ -11,7 +12,17 @@ import json
 
 @require_GET
 def home(request):
-    return HttpResponse('<h1>Home Page</h1>')
+    webpush_settings = getattr(settings, 'WEBPUSH_SETTINGS', {})
+    vapid_key = webpush_settings.get('VAPID_PUBLIC_KEY')
+    user = request.user
+    return render(
+        request=request,
+        template_name='home.html',
+        context={
+            user: user,
+            'vapid_key': vapid_key
+        }
+    )
 
 
 @require_POST
